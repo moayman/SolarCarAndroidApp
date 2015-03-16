@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/SolarCar.iml" filepath="$PROJECT_DIR$/SolarCar.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SolarCarAndroidApp.iml" filepath="$PROJECT_DIR$/SolarCarAndroidApp.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

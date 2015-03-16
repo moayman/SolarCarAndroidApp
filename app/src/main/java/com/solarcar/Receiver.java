@@ -31,11 +31,12 @@ public class Receiver implements Runnable
         prgrsbarRight = Right;
     }
 
+    @Override
     public void run()
     {
+        Log.e(TAG, "running");
         try
         {
-            Thread.sleep(10);
             int received = inStream.read();
             if(received != -1)
             {
@@ -68,10 +69,6 @@ public class Receiver implements Runnable
         catch (IOException e)
         {
             Log.e(TAG, "inStream.read() error. " + e.getMessage());
-        }
-        catch (InterruptedException e)
-        {
-            Log.e(TAG, "Thread sleep error. " + e.getMessage());
         }
     }
 

@@ -3,6 +3,7 @@ package com.solarcar;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +20,8 @@ import android.widget.ToggleButton;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 /*
@@ -59,11 +62,17 @@ public class MainActivity extends ActionBarActivity
     private byte steeringAngle = 0;
     private byte command = 0;
 
+    private Timer timer;
+    private TimerTask isAlive;
+    private final Handler handler = new Handler();
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+//        TODO
+//        startTimer();
 
         btnForward = (ImageButton) findViewById(R.id.btnForward);
         btnBackward = (ImageButton) findViewById(R.id.btnBackward);
@@ -99,7 +108,7 @@ public class MainActivity extends ActionBarActivity
                 if (arg1.getAction() == MotionEvent.ACTION_DOWN)
                 {
                     btnForward.setBackgroundResource(R.drawable.forward_pressed);
-                    btnBackward.setClickable(false);
+                    btnBackward.setEnabled(false);
                     command |= 0x01;
 
                     sendCommand();
@@ -130,7 +139,7 @@ public class MainActivity extends ActionBarActivity
                 if (arg1.getAction() == MotionEvent.ACTION_DOWN)
                 {
                     btnBackward.setBackgroundResource(R.drawable.backward_pressed);
-                    btnForward.setClickable(false);
+                    btnForward.setEnabled(false);
                     command |= 0x02;
 
                     sendCommand();
@@ -161,7 +170,7 @@ public class MainActivity extends ActionBarActivity
                 if (arg1.getAction() == MotionEvent.ACTION_DOWN)
                 {
                     btnRight.setBackgroundResource(R.drawable.right_pressed);
-                    btnLeft.setClickable(false);
+                    btnLeft.setEnabled(false);
                     if (((command >> 4) & 1) != 0 || steeringAngle == 0)
                     {
                         command |= 0x10;
@@ -172,14 +181,14 @@ public class MainActivity extends ActionBarActivity
                         steeringAngle--;
 
                     if ((steeringAngle & 1) == 0)
-                        command |= 0x04;
-                    else
                         command &= 0xFB;
+                    else
+                        command |= 0x04;
 
                     if ((steeringAngle & 2) == 0)
-                        command |= 0x08;
-                    else
                         command &= 0xF7;
+                    else
+                        command |= 0x08;
 
                     sendCommand();
                     receiveAndUpdateStatus();
@@ -204,7 +213,7 @@ public class MainActivity extends ActionBarActivity
                 if (arg1.getAction() == MotionEvent.ACTION_DOWN)
                 {
                     btnLeft.setBackgroundResource(R.drawable.left_pressed);
-                    btnRight.setClickable(false);
+                    btnRight.setEnabled(false);
                     if (((command >> 4) & 1) == 0 || steeringAngle == 0)
                     {
                         command &= 0xEF;
@@ -215,14 +224,14 @@ public class MainActivity extends ActionBarActivity
                         steeringAngle--;
 
                     if ((steeringAngle & 1) == 0)
-                        command |= 0x04;
-                    else
                         command &= 0xFB;
+                    else
+                        command |= 0x04;
 
                     if ((steeringAngle & 2) == 0)
-                        command |= 0x08;
-                    else
                         command &= 0xF7;
+                    else
+                        command |= 0x08;
 
                     sendCommand();
                     receiveAndUpdateStatus();
@@ -244,20 +253,25 @@ public class MainActivity extends ActionBarActivity
             @Override
             public boolean onTouch(View arg0, MotionEvent arg1)
             {
-                btnLeft.setClickable(false);
-                btnRight.setClickable(false);
-                btnLeft.setEnabled(true);
-                btnRight.setEnabled(true);
-                btnLeft.setBackgroundResource(R.drawable.left);
-                btnRight.setBackgroundResource(R.drawable.right);
-                prgrsbarLeft.setProgress(0);
-                prgrsbarRight.setProgress(0);
-                command &= 0x03;
+                if (arg1.getAction() == MotionEvent.ACTION_DOWN)
+                {
+                    btnLeft.setEnabled(false);
+                    btnRight.setEnabled(false);
+                    btnLeft.setEnabled(true);
+                    btnRight.setEnabled(true);
+                    btnLeft.setBackgroundResource(R.drawable.left);
+                    btnRight.setBackgroundResource(R.drawable.right);
+                    prgrsbarLeft.setProgress(0);
+                    prgrsbarRight.setProgress(0);
+                    steeringAngle = 0;
+                    command &= 0x03;
 
-                sendCommand();
-                receiveAndUpdateStatus();
+                    sendCommand();
+                    receiveAndUpdateStatus();
 
-                return true;
+                    return true;
+                }
+                return false;
             }
         });
 
@@ -292,14 +306,41 @@ public class MainActivity extends ActionBarActivity
 
     }
 
+    private void startTimer()
+    {
+        if(timer == null)
+            timer = new Timer();
+
+        isAlive = new TimerTask() {
+            public void run() {
+                handler.post(new Runnable() {
+                    public void run() {
+                    }
+                });
+            }
+        };
+
+        timer.schedule(isAlive, 0,500); //
+
+    }
+
+    private void stopTimer()
+    {
+        if(timer!=null)
+        {
+            timer.cancel();
+            timer = null;
+        }
+    }
+
 
     private void disableButtons()
     {
-        btnBackward.setClickable(false);
-        btnForward.setClickable(false);
-        btnRight.setClickable(false);
-        btnLeft.setClickable(false);
-        btnReset.setClickable(false);
+        btnBackward.setEnabled(false);
+        btnForward.setEnabled(false);
+        btnRight.setEnabled(false);
+        btnLeft.setEnabled(false);
+        btnReset.setEnabled(false);
         btnBackward.setBackgroundResource(R.drawable.backward);
         btnForward.setBackgroundResource(R.drawable.forward);
         btnRight.setBackgroundResource(R.drawable.right);
@@ -312,11 +353,11 @@ public class MainActivity extends ActionBarActivity
 
     private void enableButtons()
     {
-        btnBackward.setClickable(true);
-        btnForward.setClickable(true);
-        btnRight.setClickable(true);
-        btnLeft.setClickable(true);
-        btnReset.setClickable(true);
+        btnBackward.setEnabled(true);
+        btnForward.setEnabled(true);
+        btnRight.setEnabled(true);
+        btnLeft.setEnabled(true);
+        btnReset.setEnabled(true);
     }
 
     private void sendCommand()
@@ -337,7 +378,17 @@ public class MainActivity extends ActionBarActivity
 
     private void receiveAndUpdateStatus()
     {
-        (new Thread(new Receiver(HC05_inStream, prgrsbarLeft, prgrsbarRight, prgrsbarForward, prgrsbarBackward))).start();
+        try
+        {
+            if(HC05_inStream.available() > 0)
+                (new Thread(new Receiver(HC05_inStream, prgrsbarLeft, prgrsbarRight, prgrsbarForward, prgrsbarBackward))).start();
+            else
+                Log.e(TAG,"No packets available.");
+        }
+        catch (IOException e)
+        {
+            Log.e(TAG, "Receiving error. "+e.getMessage());
+        }
     }
 
     private void disconnectHC05Module()

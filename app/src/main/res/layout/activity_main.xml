@@ -6,77 +6,6 @@
                 android:paddingRight="@dimen/activity_horizontal_margin"
                 android:paddingTop="@dimen/activity_vertical_margin" tools:context=".MainActivity">
 
-    <ImageButton
-        android:id="@+id/btnForward"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:background="@drawable/forward"
-        android:clickable="false"/>
-
-    <ImageButton
-        android:id="@+id/btnBackward"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:background="@drawable/backward"
-        android:clickable="false"/>
-
-    <ImageButton
-        android:id="@+id/btnRight"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/btnLeft"
-        android:layout_marginLeft="20dp"
-        android:layout_toEndOf="@+id/btnLeft"
-        android:layout_toRightOf="@+id/btnLeft"
-        android:background="@drawable/right"
-        android:clickable="false"/>
-
-    <ImageButton
-        android:id="@+id/btnLeft"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_centerVertical="true"
-        android:background="@drawable/left"
-        android:clickable="false"/>
-
-    <ImageButton
-        android:id="@+id/btnReset"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:background="@drawable/reset"
-        android:clickable="false"/>
-
-    <ProgressBar
-        android:id="@+id/progressBarRight"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/btnRight"
-        android:layout_alignEnd="@+id/btnRight"
-        android:layout_alignLeft="@+id/btnRight"
-        android:layout_alignRight="@+id/btnRight"
-        android:layout_alignStart="@+id/btnRight"/>
-
-    <ProgressBar
-        android:id="@+id/progressBarLeft"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignTop="@+id/progressBarRight"
-        android:layout_toLeftOf="@+id/btnRight"
-        android:layout_toStartOf="@+id/btnRight"
-        android:rotation="180"/>
 
     <ToggleButton
         android:id="@+id/btnCarConnection"
@@ -87,27 +16,102 @@
         android:textOff="Connect"
         android:textOn="Disconnect"/>
 
-    <ProgressBar
-        android:id="@+id/progressBarForward"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:indeterminate="false"
-        android:rotation="90"
-        android:layout_toLeftOf="@+id/btnForward"
-        android:layout_toStartOf="@+id/btnForward"
-        android:layout_centerHorizontal="true"
-        android:layout_alignBottom="@+id/btnForward"
-        android:layout_alignParentTop="true"/>
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true" android:layout_alignParentStart="true">
+        <ImageButton
+            android:id="@+id/btnReset"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:background="@drawable/reset"
+            android:enabled="false" android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true" android:layout_alignParentStart="true"/>
+        <ImageButton
+            android:id="@+id/btnRight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/right"
+            android:enabled="false"
+            android:layout_alignTop="@+id/btnLeft" android:layout_toRightOf="@+id/btnLeft"
+            android:layout_toEndOf="@+id/btnLeft"/>
+        <ImageButton
+            android:id="@+id/btnLeft"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/left"
+            android:enabled="false"
+            android:layout_above="@+id/btnReset" android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"/>
+        <ProgressBar
+            android:id="@+id/progressBarRight"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/btnRight" android:layout_toRightOf="@+id/btnLeft"
+            android:layout_alignTop="@+id/progressBarLeft" android:layout_alignRight="@+id/btnRight"
+            android:layout_alignEnd="@+id/btnRight"/>
+        <ProgressBar
+            android:id="@+id/progressBarLeft"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:rotation="180" android:layout_above="@+id/btnLeft"
+            android:layout_alignParentLeft="true" android:layout_alignParentStart="true"
+            android:layout_toLeftOf="@+id/btnRight" android:layout_toStartOf="@+id/btnRight"/>
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="200dp"
+        android:layout_height="fill_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true">
+        <LinearLayout
+            android:id="@+id/forbackLayout"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" >
+            <ImageButton
+                android:id="@+id/btnForward"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/forward"
+                android:enabled="false"
+                android:scaleType="fitXY" />
+            <ImageButton
+                android:id="@+id/btnBackward"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/backward"
+                android:enabled="false"
+                android:scaleType="fitXY" />
+          </LinearLayout>
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_toLeftOf="@+id/forbackLayout" >
+            <ProgressBar
+                android:id="@+id/progressBarForward"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:rotation="90"
+                android:layout_weight="1" />
 
-    <ProgressBar
-        android:id="@+id/progressBarBackward"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:indeterminate="false"
-        android:rotation="270"
-        android:layout_alignParentBottom="true"
-        android:layout_toLeftOf="@+id/btnBackward"
-        android:layout_toStartOf="@+id/btnBackward"
-        android:layout_alignTop="@+id/btnBackward"/>
+            <ProgressBar
+                android:id="@+id/progressBarBackward"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:rotation="270"
+                android:layout_weight="1" />
+        </LinearLayout>
+    </RelativeLayout>
 
 </RelativeLayout>
