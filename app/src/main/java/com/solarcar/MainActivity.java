@@ -378,17 +378,7 @@ public class MainActivity extends ActionBarActivity
 
     private void receiveAndUpdateStatus()
     {
-        try
-        {
-            if(HC05_inStream.available() > 0)
-                (new Thread(new Receiver(HC05_inStream, prgrsbarLeft, prgrsbarRight, prgrsbarForward, prgrsbarBackward))).start();
-            else
-                Log.e(TAG,"No packets available.");
-        }
-        catch (IOException e)
-        {
-            Log.e(TAG, "Receiving error. "+e.getMessage());
-        }
+        (new Thread(new Receiver(HC05_inStream, prgrsbarLeft, prgrsbarRight, prgrsbarForward, prgrsbarBackward))).start();
     }
 
     private void disconnectHC05Module()

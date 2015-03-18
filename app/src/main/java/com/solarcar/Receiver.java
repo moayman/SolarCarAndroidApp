@@ -34,21 +34,21 @@ public class Receiver implements Runnable
     @Override
     public void run()
     {
-        Log.e(TAG, "running");
         try
         {
             int received = inStream.read();
             if(received != -1)
             {
-                int steeringAngle = (received & 0xEF) >> 2;
+                int steeringAngle = (received & 0x0C) >> 2;
+                int progress = Math.round((float)steeringAngle/MainActivity.STEERINGOFFSET*100);
                 if(((received >> 4) & 1) == 0)
                 {
-                    prgrsbarLeft.setProgress((steeringAngle/MainActivity.STEERINGOFFSET)*100);
+                    prgrsbarLeft.setProgress(progress);
                     prgrsbarRight.setProgress(0);
                 }
                 else
                 {
-                    prgrsbarRight.setProgress((steeringAngle/MainActivity.STEERINGOFFSET)*100);
+                    prgrsbarRight.setProgress(progress);
                     prgrsbarLeft.setProgress(0);
                 }
                 if((received & 1) == 0)
