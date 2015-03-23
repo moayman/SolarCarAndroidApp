@@ -3,34 +3,30 @@ package com.solarcar;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.os.Handler;
+import android.graphics.Typeface;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.ImageButton;
-import android.widget.ProgressBar;
+import android.widget.SeekBar;
+import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
 
 /*
 * Command
 * 0 0 0 0 0 0 0 0
-*       | | | | ^ -> Forward
-*       | | | ^ ---> Backward
-*       | ^ ^ -----> SteeringAngle
-*       ^ ---------> Right = 1 Left = 0
+*       | | | ^ ^ -> Right
+*       | ^ ^ -----> Left
+*       ^ ---------> Backward = 1 Forward = 0
 * */
 
 
@@ -38,7 +34,7 @@ public class MainActivity extends ActionBarActivity
 {
 
     private final String TAG = "MAIN";
-    public static final byte STEERINGOFFSET = 3;
+    public static final int LEVELS = 3;
 
     private BluetoothAdapter btAdapter;
     private BluetoothDevice HC05_BtModule;
@@ -46,48 +42,42 @@ public class MainActivity extends ActionBarActivity
     private OutputStream HC05_outStream;
     private InputStream HC05_inStream;
 
-    private ImageButton btnBackward;
-    private ImageButton btnForward;
-    private ImageButton btnRight;
-    private ImageButton btnLeft;
-    private ImageButton btnReset;
-
     private ToggleButton btnCarConnection;
 
-    private ProgressBar prgrsbarLeft;
-    private ProgressBar prgrsbarRight;
-    private ProgressBar prgrsbarForward;
-    private ProgressBar prgrsbarBackward;
-
-    private byte steeringAngle = 0;
     private byte command = 0;
 
-    private Timer timer;
-    private TimerTask isAlive;
-    private final Handler handler = new Handler();
+    private SeekBar skbarLeft;
+    private SeekBar skbarRight;
+    private TextView txtLeft;
+    private TextView txtRight;
+    private Switch switchBackward;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        TODO
-//        startTimer();
 
-        btnForward = (ImageButton) findViewById(R.id.btnForward);
-        btnBackward = (ImageButton) findViewById(R.id.btnBackward);
-        btnRight = (ImageButton) findViewById(R.id.btnRight);
-        btnLeft = (ImageButton) findViewById(R.id.btnLeft);
-        btnReset = (ImageButton) findViewById(R.id.btnReset);
+        Typeface tf = Typeface.createFromAsset(getAssets(), "digital-7.ttf");
+
+        txtLeft = (TextView) findViewById(R.id.txtLeft);
+        txtRight = (TextView) findViewById(R.id.txtRight);
+
+        txtLeft.setTypeface(tf);
+        txtRight.setTypeface(tf);
+
+        switchBackward = (Switch) findViewById(R.id.switchBackward);
+
+        skbarLeft = (SeekBar) findViewById(R.id.skbarLeft);
+        skbarRight = (SeekBar) findViewById(R.id.skbarRight);
+        skbarLeft.setMax(LEVELS);
+        skbarRight.setMax(LEVELS);
 
         btnCarConnection = (ToggleButton) findViewById(R.id.btnCarConnection);
 
-        prgrsbarLeft = (ProgressBar) findViewById(R.id.progressBarLeft);
-        prgrsbarRight = (ProgressBar) findViewById(R.id.progressBarRight);
-        prgrsbarForward = (ProgressBar) findViewById(R.id.progressBarForward);
-        prgrsbarBackward = (ProgressBar) findViewById(R.id.progressBarBackward);
-
         btAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        disableButtons();
 
         if (btAdapter != null)
         {
@@ -99,181 +89,6 @@ public class MainActivity extends ActionBarActivity
             Log.d(TAG, "Bluetooth adapter not supported");
             Toast.makeText(getApplicationContext(), "Device does not support Bluetooth.", Toast.LENGTH_LONG).show();
         }
-
-        btnForward.setOnTouchListener(new View.OnTouchListener()
-        {
-            @Override
-            public boolean onTouch(View arg0, MotionEvent arg1)
-            {
-                if (arg1.getAction() == MotionEvent.ACTION_DOWN)
-                {
-                    btnForward.setBackgroundResource(R.drawable.forward_pressed);
-                    btnBackward.setEnabled(false);
-                    command |= 0x01;
-
-                    sendCommand();
-                    receiveAndUpdateStatus();
-
-                    return true;
-                }
-                else if (arg1.getAction() == MotionEvent.ACTION_UP)
-                {
-                    btnForward.setBackgroundResource(R.drawable.forward);
-                    btnBackward.setEnabled(true);
-                    command &= 0xFE;
-
-                    sendCommand();
-                    receiveAndUpdateStatus();
-
-                    return true;
-                }
-                return false;
-            }
-        });
-
-        btnBackward.setOnTouchListener(new View.OnTouchListener()
-        {
-            @Override
-            public boolean onTouch(View arg0, MotionEvent arg1)
-            {
-                if (arg1.getAction() == MotionEvent.ACTION_DOWN)
-                {
-                    btnBackward.setBackgroundResource(R.drawable.backward_pressed);
-                    btnForward.setEnabled(false);
-                    command |= 0x02;
-
-                    sendCommand();
-                    receiveAndUpdateStatus();
-
-                    return true;
-                }
-                else if (arg1.getAction() == MotionEvent.ACTION_UP)
-                {
-                    btnBackward.setBackgroundResource(R.drawable.backward);
-                    btnForward.setEnabled(true);
-                    command &= 0xFD;
-
-                    sendCommand();
-                    receiveAndUpdateStatus();
-
-                    return true;
-                }
-                return false;
-            }
-        });
-
-        btnRight.setOnTouchListener(new View.OnTouchListener()
-        {
-            @Override
-            public boolean onTouch(View arg0, MotionEvent arg1)
-            {
-                if (arg1.getAction() == MotionEvent.ACTION_DOWN)
-                {
-                    btnRight.setBackgroundResource(R.drawable.right_pressed);
-                    btnLeft.setEnabled(false);
-                    if (((command >> 4) & 1) != 0 || steeringAngle == 0)
-                    {
-                        command |= 0x10;
-                        if (steeringAngle < STEERINGOFFSET)
-                            steeringAngle++;
-                    }
-                    else if (((command >> 4) & 1) == 0 && steeringAngle > 0)
-                        steeringAngle--;
-
-                    if ((steeringAngle & 1) == 0)
-                        command &= 0xFB;
-                    else
-                        command |= 0x04;
-
-                    if ((steeringAngle & 2) == 0)
-                        command &= 0xF7;
-                    else
-                        command |= 0x08;
-
-                    sendCommand();
-                    receiveAndUpdateStatus();
-
-                    return true;
-                }
-                else if (arg1.getAction() == MotionEvent.ACTION_UP)
-                {
-                    btnRight.setBackgroundResource(R.drawable.right);
-                    btnLeft.setEnabled(true);
-                    return true;
-                }
-                return false;
-            }
-        });
-
-        btnLeft.setOnTouchListener(new View.OnTouchListener()
-        {
-            @Override
-            public boolean onTouch(View arg0, MotionEvent arg1)
-            {
-                if (arg1.getAction() == MotionEvent.ACTION_DOWN)
-                {
-                    btnLeft.setBackgroundResource(R.drawable.left_pressed);
-                    btnRight.setEnabled(false);
-                    if (((command >> 4) & 1) == 0 || steeringAngle == 0)
-                    {
-                        command &= 0xEF;
-                        if (steeringAngle < STEERINGOFFSET)
-                            steeringAngle++;
-                    }
-                    else if (((command >> 4) & 1) != 0 && steeringAngle > 0)
-                        steeringAngle--;
-
-                    if ((steeringAngle & 1) == 0)
-                        command &= 0xFB;
-                    else
-                        command |= 0x04;
-
-                    if ((steeringAngle & 2) == 0)
-                        command &= 0xF7;
-                    else
-                        command |= 0x08;
-
-                    sendCommand();
-                    receiveAndUpdateStatus();
-
-                    return true;
-                }
-                else if (arg1.getAction() == MotionEvent.ACTION_UP)
-                {
-                    btnLeft.setBackgroundResource(R.drawable.left);
-                    btnRight.setEnabled(true);
-                    return true;
-                }
-                return false;
-            }
-        });
-
-        btnReset.setOnTouchListener(new View.OnTouchListener()
-        {
-            @Override
-            public boolean onTouch(View arg0, MotionEvent arg1)
-            {
-                if (arg1.getAction() == MotionEvent.ACTION_DOWN)
-                {
-                    btnLeft.setEnabled(false);
-                    btnRight.setEnabled(false);
-                    btnLeft.setEnabled(true);
-                    btnRight.setEnabled(true);
-                    btnLeft.setBackgroundResource(R.drawable.left);
-                    btnRight.setBackgroundResource(R.drawable.right);
-                    prgrsbarLeft.setProgress(0);
-                    prgrsbarRight.setProgress(0);
-                    steeringAngle = 0;
-                    command &= 0x03;
-
-                    sendCommand();
-                    receiveAndUpdateStatus();
-
-                    return true;
-                }
-                return false;
-            }
-        });
 
         btnCarConnection.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
         {
@@ -304,60 +119,87 @@ public class MainActivity extends ActionBarActivity
             }
         });
 
-    }
-
-    private void startTimer()
-    {
-        if(timer == null)
-            timer = new Timer();
-
-        isAlive = new TimerTask() {
-            public void run() {
-                handler.post(new Runnable() {
-                    public void run() {
-                    }
-                });
-            }
-        };
-
-        timer.schedule(isAlive, 0,500); //
-
-    }
-
-    private void stopTimer()
-    {
-        if(timer!=null)
+        skbarLeft.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
         {
-            timer.cancel();
-            timer = null;
-        }
-    }
 
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
+            {
+                command &= 0xF3;
+
+                command |= (progress << 2);
+
+                sendCommand();
+                receiveAndUpdateStatus();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar)
+            {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar)
+            {
+            }
+        });
+
+        skbarRight.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
+        {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
+            {
+                command &= 0xFC;
+
+                command |= progress;
+
+                sendCommand();
+                receiveAndUpdateStatus();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar)
+            {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar)
+            {
+            }
+        });
+
+        switchBackward.setOnCheckedChangeListener(new Switch.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
+                if(isChecked)
+                    command |= 0x10;
+                else
+                    command &= 0xEF;
+
+                sendCommand();
+                receiveAndUpdateStatus();
+            }
+        });
+
+    }
 
     private void disableButtons()
     {
-        btnBackward.setEnabled(false);
-        btnForward.setEnabled(false);
-        btnRight.setEnabled(false);
-        btnLeft.setEnabled(false);
-        btnReset.setEnabled(false);
-        btnBackward.setBackgroundResource(R.drawable.backward);
-        btnForward.setBackgroundResource(R.drawable.forward);
-        btnRight.setBackgroundResource(R.drawable.right);
-        btnLeft.setBackgroundResource(R.drawable.left);
-        prgrsbarLeft.setProgress(0);
-        prgrsbarRight.setProgress(0);
-        prgrsbarBackward.setProgress(0);
-        prgrsbarForward.setProgress(0);
+        skbarLeft.setProgress(0);
+        skbarRight.setProgress(0);
+        skbarLeft.setEnabled(false);
+        skbarRight.setEnabled(false);
+        txtLeft.setText("0");
+        txtRight.setText("0");
     }
 
     private void enableButtons()
     {
-        btnBackward.setEnabled(true);
-        btnForward.setEnabled(true);
-        btnRight.setEnabled(true);
-        btnLeft.setEnabled(true);
-        btnReset.setEnabled(true);
+        skbarLeft.setEnabled(true);
+        skbarRight.setEnabled(true);
     }
 
     private void sendCommand()
@@ -378,7 +220,7 @@ public class MainActivity extends ActionBarActivity
 
     private void receiveAndUpdateStatus()
     {
-        (new Thread(new Receiver(HC05_inStream, prgrsbarLeft, prgrsbarRight, prgrsbarForward, prgrsbarBackward))).start();
+        (new Thread(new Receiver(HC05_inStream, txtLeft, txtRight, switchBackward))).start();
     }
 
     private void disconnectHC05Module()
@@ -459,4 +301,5 @@ public class MainActivity extends ActionBarActivity
 
         return super.onOptionsItemSelected(item);
     }
+
 }

@@ -1,11 +1,25 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingBottom="@dimen/activity_vertical_margin"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:paddingRight="@dimen/activity_horizontal_margin"
-                android:paddingTop="@dimen/activity_vertical_margin" tools:context=".MainActivity">
+                tools:context=".MainActivity"
+                android:layout_margin="16dp"
+                android:id="@+id/relativeLayout">
 
+    <com.solarcar.VerticalSeekBar
+        android:id = "@+id/skbarLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"/>
+
+    <com.solarcar.VerticalSeekBar
+        android:id = "@+id/skbarRight"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp"/>
 
     <ToggleButton
         android:id="@+id/btnCarConnection"
@@ -15,103 +29,32 @@
         android:layout_centerHorizontal="true"
         android:textOff="Connect"
         android:textOn="Disconnect"/>
-
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent" android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true" android:layout_alignParentStart="true">
-        <ImageButton
-            android:id="@+id/btnReset"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:background="@drawable/reset"
-            android:enabled="false" android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true" android:layout_alignParentStart="true"/>
-        <ImageButton
-            android:id="@+id/btnRight"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/right"
-            android:enabled="false"
-            android:layout_alignTop="@+id/btnLeft" android:layout_toRightOf="@+id/btnLeft"
-            android:layout_toEndOf="@+id/btnLeft"/>
-        <ImageButton
-            android:id="@+id/btnLeft"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/left"
-            android:enabled="false"
-            android:layout_above="@+id/btnReset" android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"/>
-        <ProgressBar
-            android:id="@+id/progressBarRight"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@+id/btnRight" android:layout_toRightOf="@+id/btnLeft"
-            android:layout_alignTop="@+id/progressBarLeft" android:layout_alignRight="@+id/btnRight"
-            android:layout_alignEnd="@+id/btnRight"/>
-        <ProgressBar
-            android:id="@+id/progressBarLeft"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:rotation="180" android:layout_above="@+id/btnLeft"
-            android:layout_alignParentLeft="true" android:layout_alignParentStart="true"
-            android:layout_toLeftOf="@+id/btnRight" android:layout_toStartOf="@+id/btnRight"/>
-    </RelativeLayout>
-    <RelativeLayout
-        android:layout_width="200dp"
-        android:layout_height="fill_parent"
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="0"
+        android:id="@+id/txtLeft"
         android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true">
-        <LinearLayout
-            android:id="@+id/forbackLayout"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" >
-            <ImageButton
-                android:id="@+id/btnForward"
-                android:layout_weight="1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/forward"
-                android:enabled="false"
-                android:scaleType="fitXY" />
-            <ImageButton
-                android:id="@+id/btnBackward"
-                android:layout_weight="1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/backward"
-                android:enabled="false"
-                android:scaleType="fitXY" />
-          </LinearLayout>
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
-            android:layout_toLeftOf="@+id/forbackLayout" >
-            <ProgressBar
-                android:id="@+id/progressBarForward"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:rotation="90"
-                android:layout_weight="1" />
-
-            <ProgressBar
-                android:id="@+id/progressBarBackward"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:rotation="270"
-                android:layout_weight="1" />
-        </LinearLayout>
-    </RelativeLayout>
+        android:layout_toRightOf="@+id/skbarLeft"
+        android:layout_toEndOf="@+id/skbarLeft"
+        android:textSize="100dp"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+              android:textAppearance="?android:attr/textAppearanceLarge"
+              android:text="0"
+              android:id="@+id/txtRight"
+              android:layout_alignParentTop="true"
+              android:layout_toLeftOf="@+id/skbarRight"
+              android:layout_toStartOf="@+id/skbarRight"
+              android:textSize="100dp"/>
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reverse"
+        android:textOn="Backward"
+        android:textOff="Forward"
+        android:id="@+id/switchBackward"
+        android:layout_above="@+id/btnCarConnection"
+        android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>
