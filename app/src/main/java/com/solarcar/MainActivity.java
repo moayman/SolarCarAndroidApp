@@ -24,9 +24,10 @@ import java.util.UUID;
 /*
 * Command
 * 0 0 0 0 0 0 0 0
-*       | | | ^ ^ -> Right
-*       | ^ ^ -----> Left
-*       ^ ---------> Backward = 1 Forward = 0
+* | | | | | ^ ^ ^ -> Right
+* | | ^ ^ ^ -------> Left
+* | ^ -------------> UNUSED
+* ^ ---------------> Backward = 1 Forward = 0
 * */
 
 
@@ -34,7 +35,7 @@ public class MainActivity extends ActionBarActivity
 {
 
     private final String TAG = "MAIN";
-    public static final int LEVELS = 3;
+    public static final int LEVELS = 7;
 
     private BluetoothAdapter btAdapter;
     private BluetoothDevice HC05_BtModule;
@@ -125,9 +126,9 @@ public class MainActivity extends ActionBarActivity
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
             {
-                command &= 0xF3;
+                command &= 0xC7;
 
-                command |= (progress << 2);
+                command |= (progress << 3);
 
                 sendCommand();
                 receiveAndUpdateStatus();
@@ -150,7 +151,7 @@ public class MainActivity extends ActionBarActivity
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
             {
-                command &= 0xFC;
+                command &= 0xF8;
 
                 command |= progress;
 
@@ -175,9 +176,12 @@ public class MainActivity extends ActionBarActivity
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
             {
                 if(isChecked)
-                    command |= 0x10;
+                    command = (byte)0x80;
                 else
-                    command &= 0xEF;
+                    command = 0;
+
+                skbarLeft.setProgress(0);
+                skbarRight.setProgress(0);
 
                 sendCommand();
                 receiveAndUpdateStatus();
