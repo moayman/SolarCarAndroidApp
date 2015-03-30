@@ -196,6 +196,8 @@ public class MainActivity extends ActionBarActivity
         skbarRight.setProgress(0);
         skbarLeft.setEnabled(false);
         skbarRight.setEnabled(false);
+		switchBackward.setEnabled(false);
+        switchBackward.setChecked(false);
         txtLeft.setText("0");
         txtRight.setText("0");
     }
@@ -204,6 +206,7 @@ public class MainActivity extends ActionBarActivity
     {
         skbarLeft.setEnabled(true);
         skbarRight.setEnabled(true);
+		switchBackward.setEnabled(true);
     }
 
     private void sendCommand()
