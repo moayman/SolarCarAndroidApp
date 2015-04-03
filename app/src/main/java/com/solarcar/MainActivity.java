@@ -43,6 +43,8 @@ public class MainActivity extends ActionBarActivity
     private OutputStream HC05_outStream;
     private InputStream HC05_inStream;
 
+    private Receiver receiverThread;
+
     private ToggleButton btnCarConnection;
 
     private byte command = 0;
@@ -107,12 +109,16 @@ public class MainActivity extends ActionBarActivity
                     else
                     {
                         enableButtons();
+                        receiverThread = new Receiver(HC05_inStream, txtLeft, txtRight, switchBackward);
+                        new Thread(receiverThread).start();
                         Toast.makeText(getApplicationContext(), "Connected!", Toast.LENGTH_LONG).show();
                     }
                 }
                 else
                 {
                     command = 0;
+                    sendCommand();
+                    receiverThread.stopReceiving();
                     disconnectHC05Module();
                     disableButtons();
                     Toast.makeText(getApplicationContext(), "Disonnected!", Toast.LENGTH_LONG).show();
@@ -131,7 +137,6 @@ public class MainActivity extends ActionBarActivity
                 command |= (progress << 3);
 
                 sendCommand();
-                receiveAndUpdateStatus();
             }
 
             @Override
@@ -156,7 +161,6 @@ public class MainActivity extends ActionBarActivity
                 command |= progress;
 
                 sendCommand();
-                receiveAndUpdateStatus();
             }
 
             @Override
@@ -184,7 +188,6 @@ public class MainActivity extends ActionBarActivity
                 skbarRight.setProgress(0);
 
                 sendCommand();
-                receiveAndUpdateStatus();
             }
         });
 
@@ -223,11 +226,6 @@ public class MainActivity extends ActionBarActivity
             Log.e(TAG, "Send Command failed. " + e.getMessage());
             btnCarConnection.setChecked(false);
         }
-    }
-
-    private void receiveAndUpdateStatus()
-    {
-        (new Thread(new Receiver(HC05_inStream, txtLeft, txtRight, switchBackward))).start();
     }
 
     private void disconnectHC05Module()

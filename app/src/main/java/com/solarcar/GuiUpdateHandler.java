@@ -23,6 +23,7 @@ public class GuiUpdateHandler implements Runnable
     @Override
     public void run()
     {
+        Log.e(TAG,"updating");
         switchBackward.setChecked(((received >> 7) & 1) == 1);
         txtLeft.setText(String.valueOf((received & 0x38) >> 3));
         txtRight.setText(String.valueOf(received & 0x07));

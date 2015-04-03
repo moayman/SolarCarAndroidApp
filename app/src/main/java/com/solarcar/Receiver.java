@@ -15,6 +15,7 @@ public class Receiver implements Runnable
     private Switch switchBackward;
     private TextView txtLeft, txtRight;
     private Handler GuiHandler;
+    private volatile boolean receive;
 
     public Receiver(InputStream inputStream, TextView Left, TextView Right, Switch Backward)
     {
@@ -31,6 +32,7 @@ public class Receiver implements Runnable
         txtLeft = Left;
         txtRight = Right;
         GuiHandler = new Handler();
+        receive = true;
     }
 
     @Override
@@ -40,14 +42,20 @@ public class Receiver implements Runnable
         {
             if (inStream != null)
             {
-                int received = inStream.read();
-                if (received != -1)
+                while(receive)
                 {
-                    GuiHandler.post(new GuiUpdateHandler(txtLeft, txtRight, switchBackward, received));
-                }
-                else
-                {
-                    Log.e(TAG, "-1 received");
+                    if(inStream.available()>0)
+                    {
+                        int received = inStream.read();
+                        if (received != -1)
+                        {
+                            GuiHandler.post(new GuiUpdateHandler(txtLeft, txtRight, switchBackward, received));
+                        }
+                        else
+                        {
+                            Log.e(TAG, "-1 received");
+                        }
+                    }
                 }
             }
             else
@@ -60,5 +68,7 @@ public class Receiver implements Runnable
             Log.e(TAG, "inStream.read() error. " + e.getMessage());
         }
     }
-
+    public void stopReceiving() {
+        receive = false;
+    }
 }
