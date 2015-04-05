@@ -9,7 +9,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -24,10 +27,8 @@ import java.util.UUID;
 /*
 * Command
 * 0 0 0 0 0 0 0 0
-* | | | | | ^ ^ ^ -> Right
-* | | ^ ^ ^ -------> Left
-* | ^ -------------> UNUSED
-* ^ ---------------> Backward = 1 Forward = 0
+* | | | | ^ ^ ^ ^ -> Speed
+* ^ ^ ^ ^ ---------> Angle
 * */
 
 
@@ -35,7 +36,8 @@ public class MainActivity extends ActionBarActivity
 {
 
     private final String TAG = "MAIN";
-    public static final int LEVELS = 7;
+    public static final int SPEEDLEVELS = 7;
+    public static final int ANGLELEVELS = 7;
 
     private BluetoothAdapter btAdapter;
     private BluetoothDevice HC05_BtModule;
@@ -49,11 +51,10 @@ public class MainActivity extends ActionBarActivity
 
     private byte command = 0;
 
-    private SeekBar skbarLeft;
-    private SeekBar skbarRight;
-    private TextView txtLeft;
-    private TextView txtRight;
-    private Switch switchBackward;
+    private SeekBar skbarSpeed;
+    private SeekBar skbarAngle;
+    private TextView txtSpeed;
+    private TextView txtAngle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -63,24 +64,26 @@ public class MainActivity extends ActionBarActivity
 
         Typeface tf = Typeface.createFromAsset(getAssets(), "digital-7.ttf");
 
-        txtLeft = (TextView) findViewById(R.id.txtLeft);
-        txtRight = (TextView) findViewById(R.id.txtRight);
+        txtSpeed = (TextView) findViewById(R.id.txtSpeed);
+        txtAngle = (TextView) findViewById(R.id.txtAngle);
 
-        txtLeft.setTypeface(tf);
-        txtRight.setTypeface(tf);
+        txtSpeed.setTypeface(tf);
+        txtAngle.setTypeface(tf);
 
-        switchBackward = (Switch) findViewById(R.id.switchBackward);
+        skbarSpeed = (SeekBar) findViewById(R.id.skbarSpeed);
+        skbarAngle = (SeekBar) findViewById(R.id.skbarAngle);
 
-        skbarLeft = (SeekBar) findViewById(R.id.skbarLeft);
-        skbarRight = (SeekBar) findViewById(R.id.skbarRight);
-        skbarLeft.setMax(LEVELS);
-        skbarRight.setMax(LEVELS);
+        skbarSpeed.setMax(2*SPEEDLEVELS);
+        skbarAngle.setMax(2*ANGLELEVELS);
+
+        skbarSpeed.setProgress(SPEEDLEVELS);
+        skbarAngle.setProgress(ANGLELEVELS);
 
         btnCarConnection = (ToggleButton) findViewById(R.id.btnCarConnection);
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        disableButtons();
+//        disableButtons();
 
         if (btAdapter != null)
         {
@@ -109,7 +112,7 @@ public class MainActivity extends ActionBarActivity
                     else
                     {
                         enableButtons();
-                        receiverThread = new Receiver(HC05_inStream, txtLeft, txtRight, switchBackward);
+                        receiverThread = new Receiver(HC05_inStream, txtSpeed, txtAngle);
                         new Thread(receiverThread).start();
                         Toast.makeText(getApplicationContext(), "Connected!", Toast.LENGTH_LONG).show();
                     }
@@ -126,40 +129,14 @@ public class MainActivity extends ActionBarActivity
             }
         });
 
-        skbarLeft.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
+        skbarSpeed.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
         {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
             {
-                command &= 0xC7;
-
-                command |= (progress << 3);
-
-                sendCommand();
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar)
-            {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar)
-            {
-            }
-        });
-
-        skbarRight.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
-        {
-
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
-            {
-                command &= 0xF8;
-
+                command &= 0xF0;
                 command |= progress;
-
                 sendCommand();
             }
 
@@ -171,61 +148,65 @@ public class MainActivity extends ActionBarActivity
             @Override
             public void onStopTrackingTouch(SeekBar seekBar)
             {
+                ((VerticalSeekBar)skbarSpeed).setProgressAndThumb(SPEEDLEVELS);
             }
         });
 
-        switchBackward.setOnCheckedChangeListener(new Switch.OnCheckedChangeListener()
+        skbarAngle.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
         {
+
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
             {
-                if(isChecked)
-                    command = (byte)0x80;
-                else
-                    command = 0;
-
-                skbarLeft.setProgress(0);
-                skbarRight.setProgress(0);
-
+                command &= 0x0F;
+                command |= (progress << 4);
                 sendCommand();
             }
-        });
 
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar)
+            {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar)
+            {
+                skbarAngle.setProgress(ANGLELEVELS);
+            }
+        });
     }
 
     private void disableButtons()
     {
-        skbarLeft.setProgress(0);
-        skbarRight.setProgress(0);
-        skbarLeft.setEnabled(false);
-        skbarRight.setEnabled(false);
-		switchBackward.setEnabled(false);
-        switchBackward.setChecked(false);
-        txtLeft.setText("0");
-        txtRight.setText("0");
+        skbarSpeed.setProgress(SPEEDLEVELS);
+        skbarAngle.setProgress(ANGLELEVELS);
+        skbarSpeed.setEnabled(false);
+        skbarAngle.setEnabled(false);
+        txtSpeed.setText("0");
+        txtAngle.setText("0");
     }
 
     private void enableButtons()
     {
-        skbarLeft.setEnabled(true);
-        skbarRight.setEnabled(true);
-		switchBackward.setEnabled(true);
+        skbarSpeed.setEnabled(true);
+        skbarAngle.setEnabled(true);
     }
 
     private void sendCommand()
     {
-        try
-        {
-            if (HC05_outStream != null)
-            {
-                HC05_outStream.write(command);
-            }
-        }
-        catch (IOException e)
-        {
-            Log.e(TAG, "Send Command failed. " + e.getMessage());
-            btnCarConnection.setChecked(false);
-        }
+        Log.e(TAG, "Sending " + String.format("%8s", Integer.toBinaryString(command & 0xFF)).replace(' ', '0'));
+//        try
+//        {
+//            if (HC05_outStream != null)
+//            {
+//                HC05_outStream.write(command);
+//            }
+//        }
+//        catch (IOException e)
+//        {
+//            Log.e(TAG, "Send Command failed. " + e.getMessage());
+//            btnCarConnection.setChecked(false);
+//        }
     }
 
     private void disconnectHC05Module()

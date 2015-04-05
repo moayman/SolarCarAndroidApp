@@ -12,12 +12,11 @@ public class Receiver implements Runnable
 {
     private static final String TAG = "Receiver";
     private InputStream inStream;
-    private Switch switchBackward;
-    private TextView txtLeft, txtRight;
+    private TextView txtSpeed, txtAngle;
     private Handler GuiHandler;
     private volatile boolean receive;
 
-    public Receiver(InputStream inputStream, TextView Left, TextView Right, Switch Backward)
+    public Receiver(InputStream inputStream, TextView Speed, TextView Angle)
     {
         if (inputStream != null)
         {
@@ -28,9 +27,8 @@ public class Receiver implements Runnable
         {
             Log.e(TAG, "inputStream = null");
         }
-        switchBackward = Backward;
-        txtLeft = Left;
-        txtRight = Right;
+        txtSpeed = Speed;
+        txtAngle = Angle;
         GuiHandler = new Handler();
         receive = true;
     }
@@ -49,7 +47,7 @@ public class Receiver implements Runnable
                         int received = inStream.read();
                         if (received != -1)
                         {
-                            GuiHandler.post(new GuiUpdateHandler(txtLeft, txtRight, switchBackward, received));
+                            GuiHandler.post(new GuiUpdateHandler(txtSpeed, txtAngle, received));
                         }
                         else
                         {

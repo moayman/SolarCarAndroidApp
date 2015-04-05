@@ -6,26 +6,28 @@ import android.widget.TextView;
 
 public class GuiUpdateHandler implements Runnable
 {
-
+    private final String[] Speeds = { "-7", "-6", "-5", "-4", "-3", "-2", "-1",
+                                      "0",
+                                      "1", "2", "3", "4", "5", "6", "7" };
+    private final String[] Angles = { "-7", "-6", "-5", "-4", "-3", "-2", "-1",
+                                      "0",
+                                      "1", "2", "3", "4", "5", "6", "7" };
     private final String TAG = "GuiUpdateHandler";
-    private Switch switchBackward;
-    private TextView txtLeft, txtRight;
+    private TextView txtSpeed, txtAngle;
     private int received;
 
-    public GuiUpdateHandler(TextView Left, TextView Right, Switch Backward, int Received)
+    public GuiUpdateHandler(TextView Speed, TextView Angle, int Received)
     {
-        switchBackward = Backward;
-        txtLeft = Left;
-        txtRight = Right;
+        txtSpeed = Speed;
+        txtAngle = Angle;
         received = Received;
     }
 
     @Override
     public void run()
     {
-        Log.e(TAG,"updating");
-        switchBackward.setChecked(((received >> 7) & 1) == 1);
-        txtLeft.setText(String.valueOf((received & 0x38) >> 3));
-        txtRight.setText(String.valueOf(received & 0x07));
+        Log.e(TAG,"Updating GUI");
+        txtSpeed.setText(Speeds[received & 0x0F]);
+        txtAngle.setText(Angles[received >> 4]);
     }
 }
