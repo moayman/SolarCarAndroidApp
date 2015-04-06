@@ -7,14 +7,8 @@ import android.graphics.Typeface;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.ImageButton;
 import android.widget.SeekBar;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -34,7 +28,6 @@ import java.util.UUID;
 
 public class MainActivity extends ActionBarActivity
 {
-
     private final String TAG = "MAIN";
     public static final int SPEEDLEVELS = 7;
     public static final int ANGLELEVELS = 7;
@@ -55,6 +48,41 @@ public class MainActivity extends ActionBarActivity
     private SeekBar skbarAngle;
     private TextView txtSpeed;
     private TextView txtAngle;
+
+    @Override
+    protected void onStop()
+    {
+        btnCarConnection.setChecked(false);
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        btnCarConnection.setChecked(false);
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onPause()
+    {
+        btnCarConnection.setChecked(false);
+        super.onPause();
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        disableButtons();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        disableButtons();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -82,8 +110,6 @@ public class MainActivity extends ActionBarActivity
         btnCarConnection = (ToggleButton) findViewById(R.id.btnCarConnection);
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
-
-//        disableButtons();
 
         if (btAdapter != null)
         {
@@ -121,7 +147,8 @@ public class MainActivity extends ActionBarActivity
                 {
                     command = 0;
                     sendCommand();
-                    receiverThread.stopReceiving();
+                    if(receiverThread != null)
+                        receiverThread.stopReceiving();
                     disconnectHC05Module();
                     disableButtons();
                     Toast.makeText(getApplicationContext(), "Disonnected!", Toast.LENGTH_LONG).show();
@@ -195,18 +222,18 @@ public class MainActivity extends ActionBarActivity
     private void sendCommand()
     {
         Log.e(TAG, "Sending " + String.format("%8s", Integer.toBinaryString(command & 0xFF)).replace(' ', '0'));
-//        try
-//        {
-//            if (HC05_outStream != null)
-//            {
-//                HC05_outStream.write(command);
-//            }
-//        }
-//        catch (IOException e)
-//        {
-//            Log.e(TAG, "Send Command failed. " + e.getMessage());
-//            btnCarConnection.setChecked(false);
-//        }
+        try
+        {
+            if (HC05_outStream != null)
+            {
+                HC05_outStream.write(command);
+            }
+        }
+        catch (IOException e)
+        {
+            Log.e(TAG, "Send Command failed. " + e.getMessage());
+            btnCarConnection.setChecked(false);
+        }
     }
 
     private void disconnectHC05Module()
@@ -262,30 +289,4 @@ public class MainActivity extends ActionBarActivity
             return false;
         }
     }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings)
-        {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
 }
